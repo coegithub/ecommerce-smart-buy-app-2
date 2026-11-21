@@ -21,7 +21,8 @@ function triage(alert) {
   if (running.has(key)) return
   running.add(key)
   const prompt = `Use the grafana-error-triage agent to investigate this Grafana alert and give the final report.\n\n${JSON.stringify(alert, null, 2).slice(0, 8000)}`
-  const p = spawn('claude', ['-p', prompt, '--permission-mode', 'default', '--allowedTools', 'Bash(curl:*) Read Grep Glob Agent'], { cwd: REPO_DIR, shell: process.platform === 'win32' })
+  const p = spawn(process.env.CLAUDE_BIN || 'claude', ['-p', '--permission-mode', 'default', '--allowedTools', 'Bash(node agent-bridge/grafana-query.mjs:*),Read,Grep,Glob,Agent'], { cwd: REPO_DIR })
+  p.stdin.end(prompt)
   let out = ''
   p.stdout.on('data', d => (out += d))
   p.stderr.on('data', d => (out += d))
